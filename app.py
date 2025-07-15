@@ -1,4 +1,3 @@
-
 import streamlit as st
 import plistlib
 import json
@@ -82,8 +81,18 @@ with st.sidebar:
         password_input = st.text_input("Contraseña", type="password")
 
         if st.button("Iniciar Sesión"):
+            # Leer credenciales desde st.secrets como una cadena JSON
+            try:
+                users_data = json.loads(st.secrets["all_users"])
+            except KeyError:
+                st.error("Error: Secreto 'all_users' no encontrado. Configúralo en Streamlit Cloud.")
+                st.stop()
+            except json.JSONDecodeError:
+                st.error("Error: El secreto 'all_users' no es un JSON válido.")
+                st.stop()
+
             authenticated = False
-            for user in st.secrets["users"]:
+            for user in users_data:
                 if username_input == user["username"] and password_input == user["password"]:
                     st.session_state['authenticated'] = True
                     st.session_state['username'] = username_input
