@@ -1,3 +1,4 @@
+
 import streamlit as st
 import plistlib
 import json
@@ -81,16 +82,16 @@ with st.sidebar:
         password_input = st.text_input("Contraseña", type="password")
 
         if st.button("Iniciar Sesión"):
-            # Leer credenciales desde st.secrets
-            correct_username = st.secrets["username"]
-            correct_password = st.secrets["password"]
-
-            if username_input == correct_username and password_input == correct_password:
-                st.session_state['authenticated'] = True
-                st.session_state['username'] = username_input
-                st.success("¡Inicio de sesión exitoso!")
-                st.rerun()
-            else:
+            authenticated = False
+            for user in st.secrets["users"]:
+                if username_input == user["username"] and password_input == user["password"]:
+                    st.session_state['authenticated'] = True
+                    st.session_state['username'] = username_input
+                    st.success("¡Inicio de sesión exitoso!")
+                    authenticated = True
+                    st.rerun()
+                    break
+            if not authenticated:
                 st.error("Usuario o contraseña incorrectos.")
     else:
         st.write(f"Bienvenido, {st.session_state['username']}!")
