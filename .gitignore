@@ -1,0 +1,11 @@
+# Entorno virtual
+venv/
+
+# Archivos de sistema
+.DS_Store
+
+# Archivos generados
+*.json
+
+# Directorio de datos ignorados
+ignore/
