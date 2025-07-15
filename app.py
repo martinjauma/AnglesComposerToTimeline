@@ -1,9 +1,12 @@
 import streamlit as st
 import plistlib
 import json
-import os
-from io import StringIO
-
+# --- Configuración de la página ---
+st.set_page_config(
+    page_title="Angles Composer to Timeline Converter",
+    page_icon=":rocket:",
+    layout="wide"
+)
 def convert_composer_to_timeline(plist_file, current_user):
     """
     Convierte un archivo plist de Angles Composer a un diccionario de Timeline.
@@ -81,7 +84,7 @@ with st.sidebar:
         password = st.text_input("Contraseña", type="password")
 
         if st.button("Iniciar Sesión"):
-            if username == "Angles" and password == "ampify":
+            if username == "Angles" and password == "json":
                 st.session_state['authenticated'] = True
                 st.session_state['username'] = username
                 st.success("¡Inicio de sesión exitoso!")
