@@ -61,7 +61,6 @@ def convert_composer_to_timeline(plist_file, current_user):
 # ────────────────────────────────
 # INTERFAZ PRINCIPAL
 # ────────────────────────────────
-st.image("img/logo2.png", width=150)
 st.title("Convertir ***Composer*** a ***Timeline***")
 
 st.write("Subí un archivo `.plist` de **Angles Composer** para convertirlo a `.json` de Timeline.")

@@ -51,6 +51,8 @@ def _show_login_screen():
 
 def _show_user_sidebar():
     with st.sidebar:
+        st.sidebar.image("img/logo2.png", width=200)
+        st.divider()
         # st.header("👤 Usuario")
         col1, col2 = st.columns([1, 3])
         with col1:
