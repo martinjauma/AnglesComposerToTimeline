@@ -1,5 +1,6 @@
 # Entorno virtual
 venv/
+.venv
 
 # Archivos de sistema
 .DS_Store
@@ -9,3 +10,5 @@ venv/
 
 # Directorio de datos ignorados
 ignore/
+.streamlit/
+

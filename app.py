@@ -1,23 +1,30 @@
+# app.py
+
 import streamlit as st
 import plistlib
 import json
-import os
-from io import StringIO
+from modules.auth_google import login_required
 
+# ────────────────────────────────
+# CONFIGURACIÓN DE LA PÁGINA
+# ────────────────────────────────
+st.set_page_config(
+    page_title="Convertir Composer a Timeline",
+    page_icon="📂",
+    layout="centered",
+)
+
+# ────────────────────────────────
+# AUTENTICACIÓN
+# ────────────────────────────────
+login_required()
+current_user = st.user.name or "usuario"  # nombre del usuario logueado
+
+# ────────────────────────────────
+# FUNCIÓN PARA CONVERTIR PLIST
+# ────────────────────────────────
 def convert_composer_to_timeline(plist_file, current_user):
-    """
-    Convierte un archivo plist de Angles Composer a un diccionario de Timeline.
-
-    Args:
-        plist_file: El archivo plist subido.
-        current_user (str): El nombre del usuario actual del sistema.
-
-    Returns:
-        dict: El diccionario con la estructura de Timeline.
-    """
     plist_data = plistlib.load(plist_file)
-
-    # Esta línea se mantiene exactamente como la ha corregido el usuario.
     valid_groups = [g for g in plist_data.get("groups", []) if g.get("name") != 'Topic' and g.get('clips')]
 
     timeline_data = {
@@ -31,7 +38,7 @@ def convert_composer_to_timeline(plist_file, current_user):
     for i, group in enumerate(valid_groups):
         row = {
             "height": group.get("height", 20),
-            "clips": [], # Inicializar clips como una lista vacía para reconstruirla
+            "clips": [],
             "uuid_row": group.get("uuid group", ""),
             "height_real": group.get("height", 20),
             "row_name": group.get("name", ""),
@@ -40,112 +47,44 @@ def convert_composer_to_timeline(plist_file, current_user):
         }
 
         for clip in group.get("clips", []):
-            # Crear una copia del clip para modificar edit_info
             modified_clip = clip.copy()
-            
-            # Actualizar el autor en edit_info
             if "edit_info" in modified_clip:
                 modified_clip["edit_info"]["author"] = current_user
             else:
-                modified_clip["edit_info"] = {"author": current_user, "edit_seconds": 0} # Añadir un valor por defecto si no existe
-
+                modified_clip["edit_info"] = {"author": current_user, "edit_seconds": 0}
             row["clips"].append(modified_clip)
-        
+
         timeline_data["rows"].append(row)
 
     return timeline_data
 
+# ────────────────────────────────
+# INTERFAZ PRINCIPAL
+# ────────────────────────────────
+st.image("img/logo2.png", width=150)
+st.title("Convertir ***Composer*** a ***Timeline***")
 
-# --- Configuración de la barra lateral y lógica de autenticación ---
-st.markdown(
-    """
-    <style>
-    [data-testid="stSidebar"] {
-        background-color: rgb(25, 26, 38); /* Color de fondo del logo2.png */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+st.write("Subí un archivo `.plist` de **Angles Composer** para convertirlo a `.json` de Timeline.")
 
-if 'authenticated' not in st.session_state:
-    st.session_state['authenticated'] = False
-    st.session_state['username'] = ""
+uploaded_file = st.file_uploader("📤 Archivo .plist", type="plist")
 
-with st.sidebar:
-    st.image("img/logo2.png", width=150) # Usando ruta relativa para logo2.png
-    st.title("Autenticación")
+if uploaded_file is not None:
+    st.success("Archivo subido exitosamente.")
 
-    if not st.session_state['authenticated']:
-        username_input = st.text_input("Usuario")
-        password_input = st.text_input("Contraseña", type="password")
+    if st.button("⚙️ Convertir a JSON"):
+        try:
+            timeline_json_data = convert_composer_to_timeline(uploaded_file, current_user)
+            json_string = json.dumps(timeline_json_data, indent=2)
 
-        if st.button("Iniciar Sesión"):
-            # Leer credenciales desde st.secrets como una cadena JSON
-            try:
-                users_data = json.loads(st.secrets["all_users"])
-            except KeyError:
-                st.error("Error: Secreto 'all_users' no encontrado. Configúralo en Streamlit Cloud.")
-                st.stop()
-            except json.JSONDecodeError:
-                st.error("Error: El secreto 'all_users' no es un JSON válido.")
-                st.stop()
+            st.download_button(
+                label="📥 Descargar JSON",
+                file_name="Timeline.json",
+                mime="application/json",
+                data=json_string,
+            )
 
-            authenticated = False
-            for user in users_data:
-                if username_input == user["username"] and password_input == user["password"]:
-                    st.session_state['authenticated'] = True
-                    st.session_state['username'] = username_input
-                    st.success("¡Inicio de sesión exitoso!")
-                    authenticated = True
-                    st.rerun()
-                    break
-            if not authenticated:
-                st.error("Usuario o contraseña incorrectos.")
-    else:
-        st.write(f"Bienvenido, {st.session_state['username']}!")
-        if st.button("Cerrar Sesión"):
-            st.session_state['authenticated'] = False
-            st.session_state['username'] = ""
-            st.success("Sesión cerrada correctamente.")
-            st.rerun()
+            with st.expander("👁️ Ver JSON Convertido", expanded=False):
+                st.json(timeline_json_data)
 
-# --- Contenido de la Aplicación Principal (solo si está autenticado) ---
-if st.session_state['authenticated']:
-    st.title("Convertir ***Composer*** a  ***Timeline***")
-
-    st.write("Sube un archivo .plist de ***Angles Standaloan Composer Archive*** para convertirlo a un archivo .json de Timeline.")
-
-    # Usar el nombre de usuario autenticado
-    authenticated_username = st.session_state['username']
-    # st.info(f"Usuario actual: {authenticated_username}")
-
-    uploaded_file = st.file_uploader("Elige un archivo .plist", type="plist")
-
-    if uploaded_file is not None:
-        st.write("Archivo subido exitosamente.")
-
-        if st.button("Convertir a JSON"):
-            try:
-                timeline_json_data = convert_composer_to_timeline(uploaded_file, authenticated_username)
-                
-                st.success("¡Conversión exitosa!")
-
-                # Convertir el diccionario a una cadena de texto para la descarga
-                json_string = json.dumps(timeline_json_data, indent=2)
-
-                st.download_button(
-                    label="Descargar JSON",
-                    file_name="Timeline.json",
-                    mime="application/json",
-                    data=json_string,
-                )
-
-                # Mostrar el JSON contraído
-                with st.expander("Ver JSON Convertido", expanded=False):
-                    st.json(timeline_json_data)
-
-            except Exception as e:
-                st.error(f"Ocurrió un error durante la conversión: {e}")
-else:
-    st.info("Por favor, inicia sesión en la barra lateral para usar la aplicación.")
+        except Exception as e:
+            st.error(f"❌ Error en la conversión: {e}")
