@@ -11,4 +11,5 @@ venv/
 # Directorio de datos ignorados
 ignore/
 .streamlit/
+secrets.toml
 
