@@ -1,2 +1,3 @@
 streamlit
 pymongo
+Authlib>=1.3.2
