@@ -51,7 +51,7 @@ def _show_login_screen():
 
 def _show_user_sidebar():
     with st.sidebar:
-        st.header("👤 Usuario")
+        # st.header("👤 Usuario")
         col1, col2 = st.columns([1, 3])
         with col1:
             if st.user.picture:
