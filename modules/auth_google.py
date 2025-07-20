@@ -61,4 +61,4 @@ def _show_user_sidebar():
         with col2:
             st.subheader(st.user.name)
         st.caption(st.user.email)
-        st.button("🚪 Cerrar sesión", on_click=st.logout)
+        st.button("🏃‍♂️‍➡️ Cerrar sesión", on_click=st.logout)
