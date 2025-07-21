@@ -3,7 +3,7 @@ venv/
 .venv
 
 # Archivos de sistema
-.DS_Store
+**/.DS_Store
 
 # Archivos generados
 *.json
